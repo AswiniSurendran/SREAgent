@@ -1,0 +1,136 @@
+<#
+Filter-WARAJson-ByResourceGroups.ps1
+
+Purpose:
+  Reads an existing WARA JSON output file and writes a NEW JSON file that includes
+  ONLY entries belonging to the specified Resource Group ARM IDs.
+
+Usage:
+  powershell.exe -ExecutionPolicy Bypass -File .\Filter-WARAJson-ByResourceGroups.ps1 `
+    -InputJson ""C:\Users\assurendran\OneDrive - Microsoft\Desktop\TVSWARA\WARA_COMBINED.json"" `
+    -OutputJson "C:\Users\assurendran\OneDrive - Microsoft\Desktop\TVSWARA\WARA_COBINEDFILTERED.json"
+
+Notes:
+  - This script does NOT run WARA Collector; it filters the JSON output you already have.
+  - It filters items by matching the Resource Group derived from each item's ARM 'id'
+    OR matching a resourceGroup/resourceGroupId property if present.
+#>
+
+[CmdletBinding()]
+param(
+  [Parameter(Mandatory = $true)]
+  [string]$InputJson,
+
+  [Parameter(Mandatory = $true)]
+  [string]$OutputJson
+)
+
+# -----------------------------
+# Target Resource Groups (ARM IDs)
+# -----------------------------
+$TargetRgIds = @(
+  "/subscriptions/7789418e-4826-4414-8834-aa7f65238b99/resourceGroups/tvsmazdmsrsgprod01-ea",
+  "/subscriptions/d961b528-43c2-4e19-8328-8d77907cf028/resourceGroups/tvsmazdmsrsgprod01-ind"
+)
+
+# -----------------------------
+# Helpers
+# -----------------------------
+function Normalize-ArmId([string]$id) {
+  if (-not $id) { return $null }
+  return $id.Trim().ToLowerInvariant()
+}
+
+function Get-RgIdFromArmId([string]$armId) {
+  if (-not $armId) { return $null }
+  $m = [regex]::Match($armId, "(?i)^(/subscriptions/[^/]+/resourcegroups/[^/]+)")
+  if ($m.Success) { return $m.Groups[1].Value }
+  return $null
+}
+
+function Item-MatchesTargetRg([object]$item, [hashtable]$targetSet) {
+  if (-not $item) { return $false }
+
+  $rgId = $null
+
+  # 1) Try explicit RG properties
+  foreach ($p in @("resourceGroupId","resourceGroupID","resourceGroup","ResourceGroup","resourceGroupName","ResourceGroupName")) {
+    if ($item.PSObject.Properties.Name -contains $p) {
+      $val = $item.$p
+      if ($val -and ($val -match "(?i)^/subscriptions/.+/resourceGroups/.+")) {
+        $rgId = $val
+        break
+      }
+    }
+  }
+
+  # 2) Fallback to ARM ID parsing
+  if (-not $rgId -and ($item.PSObject.Properties.Name -contains "id")) {
+    $rgId = Get-RgIdFromArmId -armId $item.id
+  }
+
+  if (-not $rgId) { return $false }
+
+  $norm = Normalize-ArmId $rgId
+  return $targetSet.ContainsKey($norm)
+}
+
+function Filter-AnyArray([object[]]$arr, [hashtable]$targetSet) {
+  if (-not $arr) { return $arr }
+  return $arr | Where-Object { Item-MatchesTargetRg -item $_ -targetSet $targetSet }
+}
+
+# -----------------------------
+# Validate paths
+# -----------------------------
+if (-not (Test-Path $InputJson)) {
+  throw "Input JSON not found: $InputJson"
+}
+
+$parent = Split-Path -Path $OutputJson -Parent
+if ($parent -and -not (Test-Path $parent)) {
+  New-Item -ItemType Directory -Path $parent | Out-Null
+}
+
+# -----------------------------
+# Build target set
+# -----------------------------
+$targetSet = @{}
+foreach ($rg in $TargetRgIds) {
+  $targetSet[(Normalize-ArmId $rg)] = $true
+}
+
+Write-Host "Reading JSON from: $InputJson" -ForegroundColor Cyan
+$data = Get-Content $InputJson -Raw | ConvertFrom-Json
+
+Write-Host "Filtering to specified Resource Groups..." -ForegroundColor Cyan
+
+# -----------------------------
+# Case A: Top-level array
+# -----------------------------
+if ($data -is [System.Collections.IEnumerable] -and $data -isnot [string]) {
+  $filtered = Filter-AnyArray -arr @($data) -targetSet $targetSet
+  $filtered | ConvertTo-Json -Depth 100 | Out-File $OutputJson -Encoding utf8
+  Write-Host "Filtered JSON written to: $OutputJson" -ForegroundColor Green
+  Write-Host "Count before: $(@($data).Count) | Count after: $(@($filtered).Count)" -ForegroundColor Yellow
+  exit 0
+}
+
+# -----------------------------
+# Case B: Object with arrays
+# -----------------------------
+$commonProps = @("recommendations","findings","resources","items","results","assessments")
+$filteredSomething = $false
+
+foreach ($p in $commonProps) {
+  if ($data.PSObject.Properties.Name -contains $p) {
+    $before = @($data.$p).Count
+    $data.$p = Filter-AnyArray -arr @($data.$p) -targetSet $targetSet
+    $after = @($data.$p).Count
+    $filteredSomething = $true
+    Write-Host "Filtered '$p': $before -> $after" -ForegroundColor Yellow
+  }
+}
+
+# Fallback: filter all array properties
+if (-not $filteredSomething)
