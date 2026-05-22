@@ -1,13 +1,8 @@
 {
-  "name": "sre-app-demo",
+  "name": "azure-demo",
   "version": "1.0.0",
-  "description": "SRE Demo App",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2"
+    "start": "node server.js"
   }
 }
-``
