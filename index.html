@@ -1,94 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Azure SRE Demo App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Azure SRE Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Arial;
-      background: linear-gradient(135deg, #0078D4, #00B4D8);
-      color: white;
-      text-align: center;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial;
+            background: linear-gradient(135deg, #0078D4, #00B4D8);
+            color: white;
+            text-align: center;
+        }
 
-    .container {
-      margin-top: 100px;
-    }
+        .container {
+            margin-top: 100px;
+        }
 
-    h1 {
-      font-size: 45px;
-    }
+        h1 {
+            font-size: 48px;
+        }
 
-    p {
-      font-size: 18px;
-      opacity: 0.9;
-    }
+        p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
 
-    .card {
-      margin: 40px auto;
-      padding: 30px;
-      width: 320px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.15);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    }
+        .card {
+            margin: 40px auto;
+            padding: 30px;
+            width: 320px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
 
-    #status {
-      font-size: 24px;
-      font-weight: bold;
-      color: #00FFB3;
-    }
+        .status {
+            font-size: 26px;
+            font-weight: bold;
+            color: #00FFB3;
+        }
 
-    button {
-      margin-top: 20px;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      background: white;
-      color: #0078D4;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #f1f1f1;
-    }
-
-    footer {
-      margin-top: 100px;
-      font-size: 14px;
-      opacity: 0.7;
-    }
-  </style>
+        footer {
+            margin-top: 100px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+    </style>
 </head>
 
 <body>
 
-  <div class="container">
+<div class="container">
     <h1>Azure SRE Demo</h1>
     <p>AI-powered monitoring, detection & recovery</p>
 
     <div class="card">
-      <p><b>Application Status</b></p>
-      <div id="status">Healthy ✅</div>
-
-      <button onclick="simulateError()">Simulate Error</button>
+        <p><b>Application Status</b></p>
+        <div class="status">Healthy ✅</div>
     </div>
+</div>
 
-    <footer>
-      Powered by Azure App Service + SRE Agent
-    </footer>
-  </div>
-
-  <script>
-    function simulateError() {
-      document.getElementById("status").innerHTML = "Error Detected ❌";
-      fetch("/random-error"); // generates logs for demo
-    }
-  </script>
+<footer>
+    Powered by Azure App Service + SRE Agent
+</footer>
 
 </body>
 </html>
