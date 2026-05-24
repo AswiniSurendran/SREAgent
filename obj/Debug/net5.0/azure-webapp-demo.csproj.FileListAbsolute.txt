@@ -1,0 +1,6 @@
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.csproj.AssemblyReference.cache
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.AssemblyInfoInputs.cache
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.AssemblyInfo.cs
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.csproj.CoreCompileInputs.cache
+C:\Users\assurendran\azure-webapp-demo\obj\Debug\net5.0\azure-webapp-demo.MvcApplicationPartsAssemblyInfo.cache
