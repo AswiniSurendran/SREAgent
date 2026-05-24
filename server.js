@@ -1,16 +1,21 @@
 const express = require("express");
+const path = require("path");
+
 const app = express();
+const port = process.env.PORT || 8080;
 
-const port = process.env.PORT || 3000;
-
-// Serve static files (index.html)
+// Serve index.html
 app.use(express.static(__dirname));
 
-// Default route
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// simulate error endpoint (for SRE demo)
+app.get("/error", (req, res) => {
+    throw new Error("Simulated failure");
 });
 
 app.listen(port, () => {
-  console.log("App running on port " + port);
+    console.log("App running on port " + port);
 });
